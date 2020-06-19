@@ -21,7 +21,8 @@ public class HexagonalArchitectureTest {
         classes().that().resideInAPackage(BASE_PACKAGE + ".domain..")
             .should().onlyDependOnClassesThat().resideInAnyPackage(
             BASE_PACKAGE + ".domain..",
-            "java.."
+            "java..",
+            "org.joda.money.."
         );
 
     @ArchTest
