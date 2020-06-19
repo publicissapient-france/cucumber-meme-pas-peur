@@ -41,6 +41,10 @@ public final class Account {
         return emptyList();
     }
 
+    public Id getId() {
+        return id;
+    }
+
     public static final class Id {
         private final String value;
 
