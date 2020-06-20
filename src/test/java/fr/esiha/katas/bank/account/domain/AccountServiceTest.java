@@ -160,4 +160,37 @@ public class AccountServiceTest {
                 .endsWith(withdrawalOf(Money.of(EUR, 250), clock.instant()));
         }
     }
+
+    @Nested
+    class AccountHistoryServiceTest {
+        @Test
+        void should_be_an_account_history_service() {
+            assertThat(AccountHistoryService.class).isAssignableFrom(AccountService.class);
+        }
+
+        @Test
+        void should_fail_to_get_account_history_of_null_account_id() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> accountService.getAccountHistory(null))
+                .withMessage("accountId");
+        }
+
+        @Test
+        void should_fail_to_get_history_for_unknown_account() {
+            final var accountId = Account.Id.of("Unknown");
+            assertThatIllegalArgumentException()
+                .isThrownBy(() -> accountService.getAccountHistory(accountId))
+                .withMessage(unknownAccount(accountId));
+        }
+
+        @Test
+        void should_generate_account_history_with_current_time() {
+            final var accountId = Account.Id.of("Fred");
+            final var account = new Account(accountId, EUR);
+            accountRepository.put(account);
+
+            assertThat(accountService.getAccountHistory(accountId))
+                .isEqualTo(account.generateHistory(clock.instant()));
+        }
+    }
 }

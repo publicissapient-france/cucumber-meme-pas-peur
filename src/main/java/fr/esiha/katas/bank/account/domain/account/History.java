@@ -48,4 +48,12 @@ public final class History {
             .add("operations=" + operations)
             .toString();
     }
+
+    public Money getBalance() {
+        return balance;
+    }
+
+    public List<Operation> getOperations() {
+        return operations;
+    }
 }

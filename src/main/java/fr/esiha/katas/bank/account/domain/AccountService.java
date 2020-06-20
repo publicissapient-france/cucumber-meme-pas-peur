@@ -1,6 +1,7 @@
 package fr.esiha.katas.bank.account.domain;
 
 import fr.esiha.katas.bank.account.domain.account.Account;
+import fr.esiha.katas.bank.account.domain.account.History;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
@@ -10,7 +11,7 @@ import static java.lang.String.format;
 import static java.time.Clock.systemUTC;
 import static java.util.Objects.requireNonNull;
 
-public final class AccountService implements AccountOpeningService, AccountDepositService, AccountWithdrawalService {
+public final class AccountService implements AccountOpeningService, AccountDepositService, AccountWithdrawalService, AccountHistoryService {
     private final AccountRepository repository;
     private final Clock clock;
 
@@ -46,6 +47,12 @@ public final class AccountService implements AccountOpeningService, AccountDepos
         requireNonNull(accountId, "accountId");
         requireNonNull(withdrawalAmount, "withdrawalAmount");
         getAccount(accountId).withdraw(withdrawalAmount, clock.instant());
+    }
+
+    @Override
+    public History getAccountHistory(final Account.Id accountId) {
+        requireNonNull(accountId, "accountId");
+        return getAccount(accountId).generateHistory(clock.instant());
     }
 
     private Account getAccount(final Account.Id accountId) {

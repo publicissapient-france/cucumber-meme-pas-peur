@@ -67,6 +67,10 @@ public abstract class Operation {
         return format("%s(%s,%s)", getClass().getSimpleName(), amount, timestamp);
     }
 
+    public final Money getAmount() {
+        return amount;
+    }
+
     private static final class Withdrawal extends Operation {
         Withdrawal(final Money amount, final Instant timestamp) {
             super(amount, timestamp);
