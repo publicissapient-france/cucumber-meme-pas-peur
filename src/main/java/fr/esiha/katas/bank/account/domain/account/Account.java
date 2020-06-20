@@ -43,6 +43,11 @@ public final class Account {
         balance = operation.affectBalance(balance);
     }
 
+    public History generateHistory(final Instant timestamp) {
+        requireNonNull(timestamp, "timestamp");
+        return History.of(timestamp, balance, operations);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;

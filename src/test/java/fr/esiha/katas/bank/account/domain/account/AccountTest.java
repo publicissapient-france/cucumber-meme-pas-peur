@@ -5,9 +5,13 @@ import org.joda.money.Money;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
+import java.util.List;
+
 import static fr.esiha.katas.bank.account.domain.account.Operation.depositOf;
 import static fr.esiha.katas.bank.account.domain.account.Operation.withdrawalOf;
 import static java.time.Instant.EPOCH;
+import static java.time.Instant.now;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -115,6 +119,34 @@ public class AccountTest {
                 softly.assertThat(account.getBalance()).isEqualTo(operation.affectBalance(zero(EUR)));
                 softly.assertThat(account.getOperations()).endsWith(operation);
             });
+        }
+    }
+
+    @Nested
+    class AccountHistoryTest {
+        @Test
+        void should_fail_to_generate_history_with_null_instant() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> anAccount(USD).generateHistory(null))
+                .withMessage("timestamp");
+        }
+
+        @Test
+        void should_create_history_with_account_information() {
+            final var account = anAccount(USD);
+            account.deposit(Money.of(USD, 40), EPOCH);
+            account.withdraw(Money.of(USD, 3), EPOCH.plus(Duration.ofDays(3)));
+            final var now = now();
+
+            assertThat(account.generateHistory(now))
+                .isEqualTo(History.of(
+                    now,
+                    Money.of(USD, 37),
+                    List.of(
+                        depositOf(Money.of(USD, 40), EPOCH),
+                        withdrawalOf(Money.of(USD, 3), EPOCH.plus(Duration.ofDays(3)))
+                    )
+                ));
         }
     }
 
