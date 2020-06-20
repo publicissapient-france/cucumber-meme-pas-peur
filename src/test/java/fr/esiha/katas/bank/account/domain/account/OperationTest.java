@@ -66,6 +66,16 @@ class OperationTest {
         }
 
         @Test
+        void should_be_a_withdrawal() {
+            assertThat(Operation.withdrawalOf(euros(3), EPOCH).isWithdrawal()).isTrue();
+        }
+
+        @Test
+        void should_not_be_a_deposit() {
+            assertThat(Operation.withdrawalOf(euros(3), EPOCH).isDeposit()).isFalse();
+        }
+
+        @Test
         void should_fail_to_affect_balance_with_null_money() {
             assertThatNullPointerException()
                 .isThrownBy(() -> Operation.withdrawalOf(euros(5), EPOCH).affectBalance(null))
@@ -115,6 +125,16 @@ class OperationTest {
             final var timestamp = EPOCH;
             assertThat(Operation.depositOf(amount, timestamp))
                 .hasToString(format("Deposit(%s,%s)", amount, timestamp));
+        }
+
+        @Test
+        void should_not_be_a_withdrawal() {
+            assertThat(Operation.depositOf(euros(3), EPOCH).isWithdrawal()).isFalse();
+        }
+
+        @Test
+        void should_be_a_deposit() {
+            assertThat(Operation.depositOf(euros(3), EPOCH).isDeposit()).isTrue();
         }
 
         @Test

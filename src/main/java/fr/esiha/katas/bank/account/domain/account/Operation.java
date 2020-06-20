@@ -40,6 +40,14 @@ public abstract class Operation {
 
     abstract BinaryOperator<Money> balanceAffectingFunction();
 
+    public boolean isWithdrawal() {
+        return false;
+    }
+
+    public boolean isDeposit() {
+        return false;
+    }
+
     @Override
     public final boolean equals(final Object o) {
         if (this == o) return true;
@@ -68,6 +76,11 @@ public abstract class Operation {
         BinaryOperator<Money> balanceAffectingFunction() {
             return Money::minus;
         }
+
+        @Override
+        public boolean isWithdrawal() {
+            return true;
+        }
     }
 
     private static final class Deposit extends Operation {
@@ -78,6 +91,11 @@ public abstract class Operation {
         @Override
         BinaryOperator<Money> balanceAffectingFunction() {
             return Money::plus;
+        }
+
+        @Override
+        public boolean isDeposit() {
+            return true;
         }
     }
 }
