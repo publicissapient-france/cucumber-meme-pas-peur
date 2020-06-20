@@ -1,11 +1,15 @@
 package fr.esiha.katas.bank.account.domain.account;
 
 import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static fr.esiha.katas.bank.account.domain.account.Operation.depositOf;
+import static java.time.Instant.EPOCH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.joda.money.CurrencyUnit.EUR;
 import static org.joda.money.CurrencyUnit.USD;
 import static org.joda.money.Money.zero;
@@ -49,6 +53,33 @@ public class AccountTest {
     @Test
     void should_have_no_operations_when_created() {
         assertThat(anAccount(USD).getOperations()).isEmpty();
+    }
+
+    @Test
+    void should_fail_to_deposit_with_null_money() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> anAccount(EUR).deposit(null, EPOCH))
+            .withMessage("depositAmount");
+    }
+
+    @Test
+    void should_fail_to_deposit_with_null_instant() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> anAccount(EUR).deposit(zero(EUR), null))
+            .withMessage("timestamp");
+    }
+
+    @Test
+    void should_deposit_valid_amount() {
+        final var account = anAccount(EUR);
+        final var depositAmount = Money.of(EUR, 250);
+
+        account.deposit(depositAmount, EPOCH);
+
+        assertSoftly(softly -> {
+            softly.assertThat(account.getBalance()).isEqualTo(depositAmount);
+            softly.assertThat(account.getOperations()).endsWith(depositOf(depositAmount, EPOCH));
+        });
     }
 
     @Nested

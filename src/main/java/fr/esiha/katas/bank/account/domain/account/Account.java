@@ -3,21 +3,34 @@ package fr.esiha.katas.bank.account.domain.account;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static fr.esiha.katas.bank.account.domain.account.Operation.depositOf;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
+import static java.util.List.copyOf;
 import static java.util.Objects.requireNonNull;
 import static org.joda.money.Money.zero;
 
 public final class Account {
     private final Id id;
-    private final CurrencyUnit heldIn;
+    private final List<Operation> operations;
+    private Money balance;
 
     public Account(final Id id, final CurrencyUnit heldIn) {
         this.id = requireNonNull(id, "id");
-        this.heldIn = requireNonNull(heldIn, "heldIn");
+        this.operations = new ArrayList<>();
+        this.balance = zero(requireNonNull(heldIn, "heldIn"));
+    }
+
+    public void deposit(final Money depositAmount, final Instant timestamp) {
+        requireNonNull(depositAmount, "depositAmount");
+        requireNonNull(timestamp, "timestamp");
+        final var operation = depositOf(depositAmount, timestamp);
+        operations.add(operation);
+        balance = operation.affectBalance(balance);
     }
 
     @Override
@@ -34,11 +47,11 @@ public final class Account {
     }
 
     public Money getBalance() {
-        return zero(heldIn);
+        return balance;
     }
 
     public List<Operation> getOperations() {
-        return emptyList();
+        return copyOf(operations);
     }
 
     public Id getId() {
