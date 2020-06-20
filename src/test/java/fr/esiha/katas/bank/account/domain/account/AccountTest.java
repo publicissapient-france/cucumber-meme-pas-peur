@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static fr.esiha.katas.bank.account.domain.account.Operation.depositOf;
+import static fr.esiha.katas.bank.account.domain.account.Operation.withdrawalOf;
 import static java.time.Instant.EPOCH;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
@@ -55,31 +56,66 @@ public class AccountTest {
         assertThat(anAccount(USD).getOperations()).isEmpty();
     }
 
-    @Test
-    void should_fail_to_deposit_with_null_money() {
-        assertThatNullPointerException()
-            .isThrownBy(() -> anAccount(EUR).deposit(null, EPOCH))
-            .withMessage("depositAmount");
+    @Nested
+    class AccountDepositTest {
+        @Test
+        void should_fail_to_deposit_with_null_money() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> anAccount(EUR).deposit(null, EPOCH))
+                .withMessage("depositAmount");
+        }
+
+        @Test
+        void should_fail_to_deposit_with_null_instant() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> anAccount(EUR).deposit(zero(EUR), null))
+                .withMessage("timestamp");
+        }
+
+        @Test
+        void should_deposit_valid_amount() {
+            final var account = anAccount(EUR);
+            final var depositAmount = Money.of(EUR, 250);
+
+            account.deposit(depositAmount, EPOCH);
+
+            assertSoftly(softly -> {
+                final var operation = depositOf(depositAmount, EPOCH);
+                softly.assertThat(account.getBalance()).isEqualTo(operation.affectBalance(zero(EUR)));
+                softly.assertThat(account.getOperations()).endsWith(operation);
+            });
+        }
     }
 
-    @Test
-    void should_fail_to_deposit_with_null_instant() {
-        assertThatNullPointerException()
-            .isThrownBy(() -> anAccount(EUR).deposit(zero(EUR), null))
-            .withMessage("timestamp");
-    }
+    @Nested
+    class AccountWithdrawalTest {
+        @Test
+        void should_fail_to_withdraw_with_null_money() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> anAccount(EUR).withdraw(null, EPOCH))
+                .withMessage("withdrawalAmount");
+        }
 
-    @Test
-    void should_deposit_valid_amount() {
-        final var account = anAccount(EUR);
-        final var depositAmount = Money.of(EUR, 250);
+        @Test
+        void should_fail_to_withdraw_with_null_instant() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> anAccount(EUR).withdraw(zero(EUR), null))
+                .withMessage("timestamp");
+        }
 
-        account.deposit(depositAmount, EPOCH);
+        @Test
+        void should_withdraw_valid_amount() {
+            final var account = anAccount(EUR);
+            final var withdrawalAmount = Money.of(EUR, 250);
 
-        assertSoftly(softly -> {
-            softly.assertThat(account.getBalance()).isEqualTo(depositAmount);
-            softly.assertThat(account.getOperations()).endsWith(depositOf(depositAmount, EPOCH));
-        });
+            account.withdraw(withdrawalAmount, EPOCH);
+
+            assertSoftly(softly -> {
+                final var operation = withdrawalOf(withdrawalAmount, EPOCH);
+                softly.assertThat(account.getBalance()).isEqualTo(operation.affectBalance(zero(EUR)));
+                softly.assertThat(account.getOperations()).endsWith(operation);
+            });
+        }
     }
 
     @Nested

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static fr.esiha.katas.bank.account.domain.account.Operation.depositOf;
+import static fr.esiha.katas.bank.account.domain.account.Operation.withdrawalOf;
 import static java.lang.String.format;
 import static java.util.List.copyOf;
 import static java.util.Objects.requireNonNull;
@@ -28,7 +29,16 @@ public final class Account {
     public void deposit(final Money depositAmount, final Instant timestamp) {
         requireNonNull(depositAmount, "depositAmount");
         requireNonNull(timestamp, "timestamp");
-        final var operation = depositOf(depositAmount, timestamp);
+        registerOperation(depositOf(depositAmount, timestamp));
+    }
+
+    public void withdraw(final Money withdrawalAmount, final Instant timestamp) {
+        requireNonNull(withdrawalAmount, "withdrawalAmount");
+        requireNonNull(timestamp, "timestamp");
+        registerOperation(withdrawalOf(withdrawalAmount, timestamp));
+    }
+
+    private void registerOperation(final Operation operation) {
         operations.add(operation);
         balance = operation.affectBalance(balance);
     }
