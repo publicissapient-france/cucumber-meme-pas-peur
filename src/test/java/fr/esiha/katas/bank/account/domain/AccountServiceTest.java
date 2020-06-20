@@ -1,4 +1,5 @@
 package fr.esiha.katas.bank.account.domain;
+
 import fr.esiha.katas.bank.account.domain.account.Account;
 import fr.esiha.katas.bank.account.driven.inmemory.InMemoryAccountRepository;
 import org.joda.money.Money;
@@ -9,6 +10,7 @@ import java.time.Clock;
 import java.time.ZoneId;
 
 import static fr.esiha.katas.bank.account.domain.account.Operation.depositOf;
+import static fr.esiha.katas.bank.account.domain.account.Operation.withdrawalOf;
 import static java.lang.String.format;
 import static java.time.Clock.fixed;
 import static java.time.Clock.systemUTC;
@@ -22,6 +24,10 @@ public class AccountServiceTest {
     private final AccountRepository accountRepository = new InMemoryAccountRepository();
     private final Clock clock = fixed(now(), ZoneId.of("Europe/Paris"));
     private final AccountService accountService = new AccountService(accountRepository, clock);
+
+    private static String unknownAccount(final Account.Id accountId) {
+        return format("There is no account with identifier %s.", accountId);
+    }
 
     @Test
     void should_be_final() {
@@ -99,7 +105,7 @@ public class AccountServiceTest {
             final var accountId = Account.Id.of("Unknown");
             assertThatIllegalArgumentException()
                 .isThrownBy(() -> accountService.deposit(accountId, Money.of(EUR, 300)))
-                .withMessage(format("There is no account with identifier %s.", accountId));
+                .withMessage(unknownAccount(accountId));
         }
 
         @Test
@@ -111,6 +117,47 @@ public class AccountServiceTest {
 
             assertThat(accountRepository.get(accountId).orElseThrow().getOperations())
                 .endsWith(depositOf(Money.of(EUR, 250), clock.instant()));
+        }
+    }
+
+    @Nested
+    class AccountWithdrawalServiceTest {
+        @Test
+        void should_be_an_account_withdrawal_service() {
+            assertThat(AccountWithdrawalService.class).isAssignableFrom(AccountService.class);
+        }
+
+        @Test
+        void should_fail_to_withdraw_from_null_account_id() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> accountService.withdraw(null, zero(EUR)))
+                .withMessage("accountId");
+        }
+
+        @Test
+        void should_fail_to_withdraw_with_null_money() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> accountService.withdraw(Account.Id.of("Ines"), null))
+                .withMessage("withdrawalAmount");
+        }
+
+        @Test
+        void should_fail_to_withdraw_from_unknown_account() {
+            final var accountId = Account.Id.of("Unknown");
+            assertThatIllegalArgumentException()
+                .isThrownBy(() -> accountService.withdraw(accountId, zero(EUR)))
+                .withMessage(unknownAccount(accountId));
+        }
+
+        @Test
+        void should_withdraw_amount_on_correct_account_at_current_time() {
+            final var accountId = Account.Id.of("Kent");
+            accountRepository.put(new Account(accountId, EUR));
+
+            accountService.withdraw(accountId, Money.of(EUR, 250));
+
+            assertThat(accountRepository.get(accountId).orElseThrow().getOperations())
+                .endsWith(withdrawalOf(Money.of(EUR, 250), clock.instant()));
         }
     }
 }

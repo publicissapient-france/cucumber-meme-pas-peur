@@ -10,7 +10,7 @@ import static java.lang.String.format;
 import static java.time.Clock.systemUTC;
 import static java.util.Objects.requireNonNull;
 
-public final class AccountService implements AccountOpeningService, AccountDepositService {
+public final class AccountService implements AccountOpeningService, AccountDepositService, AccountWithdrawalService {
     private final AccountRepository repository;
     private final Clock clock;
 
@@ -38,7 +38,17 @@ public final class AccountService implements AccountOpeningService, AccountDepos
     public void deposit(final Account.Id accountId, final Money depositAmount) {
         requireNonNull(accountId, "accountId");
         requireNonNull(depositAmount, "depositAmount");
-        final var account = repository.get(accountId).orElseThrow(() -> unknownAccount(accountId));
-        account.deposit(depositAmount, clock.instant());
+        getAccount(accountId).deposit(depositAmount, clock.instant());
+    }
+
+    @Override
+    public void withdraw(final Account.Id accountId, final Money withdrawalAmount) {
+        requireNonNull(accountId, "accountId");
+        requireNonNull(withdrawalAmount, "withdrawalAmount");
+        getAccount(accountId).withdraw(withdrawalAmount, clock.instant());
+    }
+
+    private Account getAccount(final Account.Id accountId) {
+        return repository.get(accountId).orElseThrow(() -> unknownAccount(accountId));
     }
 }
