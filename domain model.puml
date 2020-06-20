@@ -1,0 +1,70 @@
+@startuml
+set namespaceSeparator none
+
+package account <<Aggregate>> {
+    class Account <<E, E, Root>> {
+        balance: Money
+        operations: List<Operation>
+        --
+        .. Commands ..
+        deposit(Money, Instant): void
+        withdraw(Money, Instant): void
+        .. Queries ..
+        generateHistory(Instant): History
+    }
+    Account *-> Account.Id
+    Account o--> Operation
+    Account ..> History: create
+    Account ..> Operation: create
+
+    class Account.Id <<V, V>> {
+        value: String
+    }
+
+    abstract Operation <<V, V>> {
+        amount: Money
+        timestamp: Instant
+        {abstract} affectBalance(Money): Money
+    }
+
+    class Deposit <<V, V>>
+    Operation <|-- Deposit
+
+    class Withdrawal <<V, V>>
+    Operation <|-- Withdrawal
+
+    class History <<V, V>> {
+        timestamp: Instant
+        balance: Money
+        operations: List<Operation>
+    }
+}
+
+class AccountService <<S, S>> {
+    .. Commands ..
+    openAccount(Account.Id, Currency): void
+    deposit(Account.Id, Money): void
+    withdraw(Account.Id, Money): void
+    .. Queries ..
+    getAccountHistory(Account.Id): History
+}
+together {
+    open ()-- AccountService
+    deposit ()-- AccountService
+    withdraw ()-- AccountService
+    history ()-- AccountService
+}
+AccountService ..> Account
+AccountService *--> AccountRepository
+
+interface AccountRepository <<R, R>> {
+    .. Commands ..
+    put(Account): void
+    .. Queries ..
+    get(Account.Id): Optional<Account>
+}
+together {
+    AccountRepository ----() put
+    AccountRepository ----() get
+}
+@enduml
