@@ -7,7 +7,6 @@ import org.joda.money.Money;
 
 import java.time.Clock;
 
-import static java.lang.String.format;
 import static java.time.Clock.systemUTC;
 import static java.util.Objects.requireNonNull;
 
@@ -22,10 +21,6 @@ public final class AccountService implements AccountOpeningService, AccountDepos
     AccountService(final AccountRepository repository, final Clock clock) {
         this.repository = requireNonNull(repository, "repository");
         this.clock = requireNonNull(clock, "clock");
-    }
-
-    private static IllegalArgumentException unknownAccount(final Account.Id accountId) {
-        return new IllegalArgumentException(format("There is no account with identifier %s.", accountId));
     }
 
     @Override
@@ -56,6 +51,6 @@ public final class AccountService implements AccountOpeningService, AccountDepos
     }
 
     private Account getAccount(final Account.Id accountId) {
-        return repository.get(accountId).orElseThrow(() -> unknownAccount(accountId));
+        return repository.get(accountId).orElseThrow(() -> new UnknownAccountException(accountId));
     }
 }

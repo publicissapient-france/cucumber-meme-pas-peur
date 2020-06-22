@@ -11,7 +11,6 @@ import java.time.ZoneId;
 
 import static fr.esiha.katas.bank.account.domain.account.Operation.depositOf;
 import static fr.esiha.katas.bank.account.domain.account.Operation.withdrawalOf;
-import static java.lang.String.format;
 import static java.time.Clock.fixed;
 import static java.time.Clock.systemUTC;
 import static java.time.Instant.now;
@@ -24,10 +23,6 @@ public class AccountServiceTest {
     private final AccountRepository accountRepository = new InMemoryAccountRepository();
     private final Clock clock = fixed(now(), ZoneId.of("Europe/Paris"));
     private final AccountService accountService = new AccountService(accountRepository, clock);
-
-    private static String unknownAccount(final Account.Id accountId) {
-        return format("There is no account with identifier %s.", accountId);
-    }
 
     @Test
     void should_be_final() {
@@ -103,9 +98,9 @@ public class AccountServiceTest {
         @Test
         void should_fail_to_deposit_on_unknown_account() {
             final var accountId = Account.Id.of("Unknown");
-            assertThatIllegalArgumentException()
+            assertThatExceptionOfType(UnknownAccountException.class)
                 .isThrownBy(() -> accountService.deposit(accountId, Money.of(EUR, 300)))
-                .withMessage(unknownAccount(accountId));
+                .withMessageContaining(accountId.toString());
         }
 
         @Test
@@ -144,9 +139,9 @@ public class AccountServiceTest {
         @Test
         void should_fail_to_withdraw_from_unknown_account() {
             final var accountId = Account.Id.of("Unknown");
-            assertThatIllegalArgumentException()
+            assertThatExceptionOfType(UnknownAccountException.class)
                 .isThrownBy(() -> accountService.withdraw(accountId, zero(EUR)))
-                .withMessage(unknownAccount(accountId));
+                .withMessageContaining(accountId.toString());
         }
 
         @Test
@@ -178,9 +173,9 @@ public class AccountServiceTest {
         @Test
         void should_fail_to_get_history_for_unknown_account() {
             final var accountId = Account.Id.of("Unknown");
-            assertThatIllegalArgumentException()
+            assertThatExceptionOfType(UnknownAccountException.class)
                 .isThrownBy(() -> accountService.getAccountHistory(accountId))
-                .withMessage(unknownAccount(accountId));
+                .withMessageContaining(accountId.toString());
         }
 
         @Test
