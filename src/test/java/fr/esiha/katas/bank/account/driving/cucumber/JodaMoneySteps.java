@@ -6,9 +6,10 @@ import org.joda.money.Money;
 
 public class JodaMoneySteps implements En {
     private static final String CURRENCY_REGEX = "[A-Z]{3}";
+    public static final String MONEY_REGEX = CURRENCY_REGEX + " \\S+";
 
     public JodaMoneySteps() {
         ParameterType("currency", CURRENCY_REGEX, CurrencyUnit::of);
-        ParameterType("money", CURRENCY_REGEX + " \\S+", Money::parse);
+        ParameterType("money", MONEY_REGEX, Money::parse);
     }
 }
