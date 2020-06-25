@@ -151,6 +151,41 @@ public class AccountTest {
     }
 
     @Nested
+    class AccountBalanceTest {
+        @Test
+        void should_fail_to_tell_it_has_at_least_balance_of_with_null_money() {
+            assertThatNullPointerException()
+                .isThrownBy(() -> anAccount(EUR).hasBalanceOfAtLeast(null))
+                .withMessage("amount");
+        }
+
+        @Test
+        void should_tell_it_has_at_least_balance_of_equal_money() {
+            final var account = anAccount(EUR);
+            final var amount = Money.of(EUR, 123);
+            account.deposit(amount, now());
+
+            assertThat(account.hasBalanceOfAtLeast(amount)).isTrue();
+        }
+
+        @Test
+        void should_tell_it_does_not_have_at_least_balance_of_greater_money() {
+            final var account = anAccount(EUR);
+            account.deposit(Money.of(EUR, 100), now());
+
+            assertThat(account.hasBalanceOfAtLeast(Money.of(EUR, 101))).isFalse();
+        }
+
+        @Test
+        void should_tell_it_has_at_least_balance_of_lesser_money() {
+            final var account = anAccount(EUR);
+            account.deposit(Money.of(EUR, 100), now());
+
+            assertThat(account.hasBalanceOfAtLeast(Money.of(EUR, 99))).isTrue();
+        }
+    }
+
+    @Nested
     class IdTest {
         @Test
         void should_be_final() {

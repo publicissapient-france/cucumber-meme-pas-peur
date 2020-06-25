@@ -48,6 +48,11 @@ public final class Account {
         return History.of(timestamp, balance, operations);
     }
 
+    public boolean hasBalanceOfAtLeast(final Money amount) {
+        requireNonNull(amount, "amount");
+        return !balance.isLessThan(amount);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
