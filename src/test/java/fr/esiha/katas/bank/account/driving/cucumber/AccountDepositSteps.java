@@ -6,5 +6,6 @@ import io.cucumber.java8.En;
 public class AccountDepositSteps implements En {
     public AccountDepositSteps(final AccountDepositService accountDepositService) {
         When("{accountId} deposits {money} on her account", accountDepositService::deposit);
+        Given("{accountId} has deposited {money} on her account", accountDepositService::deposit);
     }
 }
