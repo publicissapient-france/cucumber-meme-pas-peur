@@ -147,12 +147,28 @@ public class AccountServiceTest {
         @Test
         void should_withdraw_amount_on_correct_account_at_current_time() {
             final var accountId = Account.Id.of("Kent");
-            accountRepository.put(new Account(accountId, EUR));
+            createAccount(accountId, Money.of(EUR, 500));
 
             accountService.withdraw(accountId, Money.of(EUR, 250));
 
             assertThat(accountRepository.get(accountId).orElseThrow().getOperations())
                 .endsWith(withdrawalOf(Money.of(EUR, 250), clock.instant()));
+        }
+
+        @Test
+        void should_fail_to_withdraw_more_than_the_account_balance() {
+            final var accountId = Account.Id.of("Roger");
+            final var balance = Money.of(EUR, 200);
+            createAccount(accountId, balance);
+
+            assertThatExceptionOfType(InsufficientProvisionException.class)
+                .isThrownBy(() -> accountService.withdraw(accountId, Money.of(EUR, 1200)))
+                .withMessageContaining(balance.toString());
+        }
+
+        private void createAccount(final Account.Id accountId, final Money initialDeposit) {
+            accountRepository.put(new Account(accountId, initialDeposit.getCurrencyUnit()));
+            accountService.deposit(accountId, initialDeposit);
         }
     }
 

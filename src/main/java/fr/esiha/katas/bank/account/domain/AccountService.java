@@ -23,6 +23,12 @@ public final class AccountService implements AccountOpeningService, AccountDepos
         this.clock = requireNonNull(clock, "clock");
     }
 
+    private static void requireSufficientProvision(final Account account, final Money withdrawalAmount) {
+        if (!account.hasBalanceOfAtLeast(withdrawalAmount)) {
+            throw new InsufficientProvisionException(account.getBalance());
+        }
+    }
+
     @Override
     public void openAccount(final Account.Id accountId, final CurrencyUnit heldIn) {
         requireNonNull(accountId, "accountId");
@@ -41,7 +47,10 @@ public final class AccountService implements AccountOpeningService, AccountDepos
     public void withdraw(final Account.Id accountId, final Money withdrawalAmount) {
         requireNonNull(accountId, "accountId");
         requireNonNull(withdrawalAmount, "withdrawalAmount");
-        getAccount(accountId).withdraw(withdrawalAmount, clock.instant());
+
+        final var account = getAccount(accountId);
+        requireSufficientProvision(account, withdrawalAmount);
+        account.withdraw(withdrawalAmount, clock.instant());
     }
 
     @Override

@@ -11,3 +11,9 @@ Feature: Withdraw money from a bank account.
       Given Emma has a bank account with a balance of EUR 1500
       When Emma withdraws EUR 1500 from her account
       Then Emma's account has a balance of EUR 0
+
+   Scenario: Roger tries to withdraw more than his savings
+      Given Roger has a bank account with a balance of EUR 1200
+      When Roger withdraws EUR 2000 from his account
+      Then the withdrawal is refused
+      And Roger's account has a balance of EUR 1200
