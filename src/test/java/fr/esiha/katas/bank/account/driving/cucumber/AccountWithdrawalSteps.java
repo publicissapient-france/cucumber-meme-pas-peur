@@ -5,6 +5,6 @@ import io.cucumber.java8.En;
 
 public class AccountWithdrawalSteps implements En {
     public AccountWithdrawalSteps(final AccountWithdrawalService accountWithdrawalService) {
-        When("{accountId} withdraws {money} from his account", accountWithdrawalService::withdraw);
+        When("{accountId} withdraws {money} from his/her account", accountWithdrawalService::withdraw);
     }
 }
